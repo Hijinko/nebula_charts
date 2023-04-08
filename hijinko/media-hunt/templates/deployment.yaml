@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "media-hunt.fullname" . }}
+  labels:
+    {{- include "media-hunt.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "media-hunt.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "media-hunt.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "media-hunt.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: gluetun
+          securityContext:
+            {{- toYaml .Values.gluetun.securityContext | nindent 12 }}
+          image: "{{ .Values.gluetun.image.repository }}:{{ .Values.gluetun.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.gluetun.image.pullPolicy }}
+          ports:
+            - name: gluetun
+              containerPort: {{ .Values.gluetun.service.port }}
+              protocol: TCP
+          env:
+          {{- range $k, $v := .Values.gluetun.environment }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
+          {{- end }}
+        - name: sabnzbd
+          image: "{{ .Values.sabnzbd.image.repository }}:{{ .Values.sabnzbd.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.sabnzbd.image.pullPolicy }}
+          ports:
+            - name: sabnzbd
+              containerPort: {{ .Values.sabnzbd.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: sabnzbd
+          readinessProbe:
+            httpGet:
+              path: /
+              port: sabnzbd
+          {{- if or .Values.persistence.enabled .Values.persistence.nfs_enabled }}
+          volumeMounts:
+          {{- if .Values.persistence.enabled }}
+          - name: config
+            mountPath: config 
+          {{- end }}
+          - name: downloads
+            mountPath: /downloads
+          {{- end }}
+          env:
+          {{- range $k, $v := .Values.sabnzbd.environment }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
+          {{- end }}
+        - name: nzbhydra2
+          image: "{{ .Values.nzbhydra2.image.repository }}:{{ .Values.nzbhydra2.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.nzbhydra2.image.pullPolicy }}
+          ports:
+            - name: nzbhydra2
+              containerPort: {{ .Values.nzbhydra2.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: nzbhydra2
+          readinessProbe:
+            httpGet:
+              path: /
+              port: nzbhydra2
+          {{- if or .Values.persistence.enabled .Values.persistence.nfs_enabled }}
+          volumeMounts:
+          {{- if .Values.persistence.enabled }}
+          - name: config
+            mountPath: /config 
+          {{- end }}
+          - name: downloads
+            mountPath: /downloads
+          {{- end }}
+          env:
+          {{- range $k, $v := .Values.nzbhydra2.environment }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
+          {{- end }}
+      {{- if or .Values.persistence.enabled .Values.persistence.nfs_enabled }}
+      volumes:
+      {{- if .Values.persistence.enabled }}
+      - name: config
+        persistentVolumeClaim:
+          claimName: config
+      {{- end }}
+      - name: downloads
+      {{- if .Values.persistence.nfs_enabled }}
+        nfs:
+          server: {{ .Values.persistence.server }}
+          path: {{ .Values.persistence.path }}
+      {{- else }}
+        persistentVolumeClaim:
+          claimName: downloads
+      {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

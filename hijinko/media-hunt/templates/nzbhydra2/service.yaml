@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nzbhydra2 
+  labels:
+    {{- include "media-hunt.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.nzbhydra2.service.type }}
+  ports:
+    - port: {{ .Values.nzbhydra2.service.port }}
+      targetPort: nzbhydra2
+      protocol: TCP
+      name: nzbhydra2
+  selector:
+    {{- include "media-hunt.selectorLabels" . | nindent 4 }}
