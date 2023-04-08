@@ -67,8 +67,8 @@ gluetun:
   environment:
     VPN_SERVICE_PROVIDER: ipvanish
     VPN_TYPE: openvpn
-    OPENVPN_USER: 
-    OPENVPN_PASSWORD: 
+    OPENVPN_USER:
+    OPENVPN_PASSWORD:
     # Wireguard:
     # - WIREGUARD_PRIVATE_KEY=wOEI9rqqbDwnN8/Bpp22sVz48T71vJ4fYmFWujulwUU=
     # - WIREGUARD_ADDRESSES=10.64.222.21/32
@@ -128,5 +128,8 @@ sabnzbd:
     TZ: America/New_York
 
 persistence:
-  enabled: true
+  enabled: true # configuration persistence
   storageClass: "openebs-hostpath"
+  nfs_enabled: true # if set to false persistence for data can be managed by storage class
+  server:
+  path:

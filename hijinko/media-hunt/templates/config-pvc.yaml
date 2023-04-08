@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sabnzbd-config
+  name: config
   labels: {{- include "media-hunt.labels" . | nindent 4 }}
 spec:
   accessModes:
