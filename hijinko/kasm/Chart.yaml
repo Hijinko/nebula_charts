@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: 1.16.0
+description: A helm chart for kasm
+icon: https://avatars.githubusercontent.com/u/44181855?s=200&v=4
+maintainers:
+- email: kevin.n.ellis3.mil@army.mil
+  name: SSG Kevin Ellis
+name: kasm
+type: application
+version: 0.1.3
