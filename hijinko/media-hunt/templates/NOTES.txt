@@ -1,8 +1,13 @@
 1. Get the application URL by running these commands:
-{{- if .Values.ingress.enabled }}
-{{- range $host := .Values.ingress.hosts }}
+{{- if .Values.nzbhydra2.ingress.enabled }}
+{{- range $host := .Values.nzbhydra2.ingress.hosts }}
   {{- range .paths }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  http{{ if $.Values.nzbhydra2.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- range $host := .Values.sabnzbd.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.sabnzbd.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
 {{- else if contains "NodePort" .Values.service.type }}

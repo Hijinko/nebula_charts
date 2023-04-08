@@ -57,6 +57,11 @@ spec:
             httpGet:
               path: /
               port: sabnzbd
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+          - name: sabnzbd-config
+            mountPath: /config 
+          {{- end }}
           env:
           {{- range $k, $v := .Values.sabnzbd.environment }}
           - name: {{ $k }}
@@ -77,12 +82,25 @@ spec:
             httpGet:
               path: /
               port: nzbhydra2
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+          - name: nzbhydra2-config
+            mountPath: /config 
+          {{- end }}
           env:
           {{- range $k, $v := .Values.nzbhydra2.environment }}
           - name: {{ $k }}
             value: {{ $v | quote }}
           {{- end }}
-
+      {{- if .Values.persistence.enabled }}
+      volumes:
+      - name: sabnzbd-config
+        persistentVolumeClaim:
+          claimName: sabnzbd-config
+      - name: nzbhydra2-config
+        persistentVolumeClaim:
+          claimName: nzbhydra2-config
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
