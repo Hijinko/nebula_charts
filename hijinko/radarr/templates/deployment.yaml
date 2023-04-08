@@ -83,7 +83,7 @@ spec:
       {{- if .Values.persistence.nfs_enabled }}
         nfs:
           server: {{ .Values.persistence.server }}
-          path: {{ .Values.persistence.tv_path }}
+          path: {{ .Values.persistence.movies_path }}
       {{- else }}
         persistentVolumeClaim:
           claimName: movies

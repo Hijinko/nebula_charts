@@ -50,7 +50,7 @@ ingress:
     - host: radarr.local
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: "ImplementationSpecific"
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -90,7 +90,7 @@ persistence:
   enabled: true # configuration persistence
   storageClass: "openebs-hostpath"
   nfs_enabled: false # if set to false persistence for data can be managed by storage class
-  server: true 
+  server: 
   movies_path: 
   downloads_path:
   
