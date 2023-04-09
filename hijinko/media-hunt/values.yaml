@@ -69,6 +69,11 @@ gluetun:
     VPN_TYPE: openvpn
     OPENVPN_USER:
     OPENVPN_PASSWORD:
+    ## Albania, Argentina, Australia, Austria, Belgium, Brazil, Bulgaria, Canada, Chile, Colombia, Costa Rica, Croatia, Czech Republic, 
+    ## Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Iceland, India, Ireland, Israel, Italy, Japan, Korea, Latvia, Luxembourg, 
+    ## Malaysia, Mexico, Moldova, Netherlands, New Zealand, Norway, Peru, Poland, Portugal, Romania, Serbia, Singapore, Slovakia, Slovenia, Spain, 
+    ## Sweden, Switzerland, Taiwan, Turkey, United Arab Emirates, United Kingdom, United States
+    SERVER_COUNTRIES: "United States"
     # Wireguard:
     # - WIREGUARD_PRIVATE_KEY=wOEI9rqqbDwnN8/Bpp22sVz48T71vJ4fYmFWujulwUU=
     # - WIREGUARD_ADDRESSES=10.64.222.21/32
@@ -91,7 +96,7 @@ nzbhydra2:
       - host: nzbhydra2.local
         paths:
           - path: /
-            pathType: ImplementationSpecific
+            pathType: "ImplementationSpecific"
 
   service:
     type: ClusterIP
@@ -116,7 +121,7 @@ sabnzbd:
       - host: sabnzbd.local
         paths:
           - path: /
-            pathType: ImplementationSpecific
+            pathType: "ImplementationSpecific"
 
   service:
     type: ClusterIP
@@ -130,6 +135,7 @@ sabnzbd:
 persistence:
   enabled: true # configuration persistence
   storageClass: "openebs-hostpath"
-  nfs_enabled: true # if set to false persistence for data can be managed by storage class
+  nfs_enabled: false # if set to false persistence for data can be managed by storage class
   server:
   path:
+  
