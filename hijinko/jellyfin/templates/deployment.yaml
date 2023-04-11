@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jellyfin.fullname" . }}
+  labels:
+    {{- include "jellyfin.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "jellyfin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jellyfin.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jellyfin.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- if or .Values.persistence.enabled .Values.persistence.nfs_enabled }}
+          volumeMounts:
+          {{- if .Values.persistence.enabled }}
+          - name: dev
+            mountPath: /dev/dri/
+          - name: config
+            mountPath: config 
+          {{- end }}
+          - name: movies
+            mountPath: /movies
+          - name: tv
+            mountPath: /tv
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          {{- range $k, $v := .Values.environment }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+
+      {{- if or .Values.persistence.enabled .Values.persistence.nfs_enabled }}
+      {{- if .Values.persistence.transcode }}
+      volumes:
+      - name: dev
+        hostPath:
+          path: {{ .Values.persistence.device_path }}
+      {{- end }}
+      {{- if .Values.persistence.enabled }}
+      - name: config
+        persistentVolumeClaim:
+          claimName: config
+      {{- end }}
+      - name: movies
+      {{- if .Values.persistence.nfs_enabled }}
+        nfs:
+          server: {{ .Values.persistence.server }}
+          path: {{ .Values.persistence.movies_path }}
+      {{- else }}
+        persistentVolumeClaim:
+          claimName: movies
+      {{- end }}
+      - name: tv
+      {{- if .Values.persistence.nfs_enabled }}
+        nfs:
+          server: {{ .Values.persistence.server }}
+          path: {{ .Values.persistence.tv_path }}
+      {{- else }}
+        persistentVolumeClaim:
+          claimName: tv
+      {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
