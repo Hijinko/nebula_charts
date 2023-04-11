@@ -37,14 +37,6 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /web
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /web
-              port: http
           {{- if or .Values.persistence.enabled .Values.persistence.nfs_enabled }}
           volumeMounts:
           {{- if .Values.persistence.enabled }}
