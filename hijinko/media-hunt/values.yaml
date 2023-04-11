@@ -49,7 +49,7 @@ affinity: {}
 
 gluetun:
   image:
-    repository: qmcgaw/gluetun
+    repository: ghcr.io/qdm12/gluetun
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "latest"
@@ -93,7 +93,7 @@ nzbhydra2:
     enabled: true
     className: "nginx"
     hosts:
-      - host: nzbhydra2.hijinkube.net
+      - host: nzbhydra2.local
         paths:
           - path: /
             pathType: "ImplementationSpecific"
@@ -118,7 +118,7 @@ sabnzbd:
     enabled: true
     className: "nginx"
     hosts:
-      - host: sabnzbd.hijinkube.net
+      - host: sabnzbd.local
         paths:
           - path: /
             pathType: "ImplementationSpecific"
