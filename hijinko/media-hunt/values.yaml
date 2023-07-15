@@ -134,7 +134,7 @@ sabnzbd:
 
 persistence:
   enabled: false # configuration persistence
-  storageClass: "openebs-hostpath"
+  storageClass: "longhorn"
   nfs_enabled: false # if set to false persistence for data can be managed by storage class
   server:
   path:
