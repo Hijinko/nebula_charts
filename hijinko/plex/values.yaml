@@ -90,12 +90,12 @@ environment:
   PLEX_CLAIM:
 
 persistence:
-  enabled: true # configuration persistence
-  storageClass: "openebs-hostpath"
-  nfs_enabled: true # if set to false persistence for data can be managed by storage class
+  enabled: false # configuration persistence
+  storageClass: "longhorn"
+  nfs_enabled: false # if set to false persistence for data can be managed by storage class
   server:
   tv_path:
   movies_path:
   # transcode highly recommended
-  transcode: true 
+  transcode: false 
   device_path: /dev/dri
