@@ -86,5 +86,5 @@ environment:
   TZ: America/New_York
 
 persistence:
-  enabled: false # configuration persistence
+  enabled: true # configuration persistence
   storageClass: "longhorn"
