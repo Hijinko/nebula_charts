@@ -30,7 +30,7 @@ nginx:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
-      - host: wger.hijinkube.net
+      - host: wger.local
         paths:
           - path: /
             pathType: ImplementationSpecific
@@ -106,7 +106,7 @@ environment:
   REFRESH_TOKEN_LIFETIME: "24" # The lifetime duration of the refresh token, in hours'
   SECRET_KEY: wger-docker-supersecret-key-1234567890!@#$%^&*(-_)
   SIGNING_KEY: wger-docker-secret-jwtkey-1234567890!@#$%^&*(-_=+)
-  SITE_URL: https://wger.hijinkube.net
+  SITE_URL: https://wger.local
   SYNC_EXERCISE_IMAGES_CELERY: "True"
   SYNC_EXERCISE_VIDEOS_CELERY: "True"
   SYNC_EXERCISES_CELERY: "True"
