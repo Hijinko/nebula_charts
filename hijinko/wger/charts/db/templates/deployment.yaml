@@ -42,13 +42,6 @@ spec:
           envFrom:
           - configMapRef:
               name: wger-env
-          volumeMounts:
-          - name: data
-            mountPath: /var/lib/postgresql/data/
-      volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: postgres-data
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
