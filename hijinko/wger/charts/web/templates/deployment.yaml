@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "web.fullname" . }}
+  labels:
+    {{- include "web.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "web.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "web.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: remove-dir
+        image: busybox:stable
+        # ext4 filesystems creates a root owned lost+found directory that will
+        # cause errors during setup
+        command: ["sh", "-c", "rm -rf /static/lost+found /media/lost+found"]
+        volumeMounts:
+        - name: static
+          mountPath: /static
+        - name: media
+          mountPath: /media
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "web.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - wget --no-verbose --tries=1 --spider http://wger-web:8000/
+            failureThreshold: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "python3 manage.py sync-exercises || true ; python3 manage.py download-exercise-images || true ; python3 manage.py download-exercise-videos || true ; wger load-online-fixtures || true"]
+          volumeMounts:
+          - name: static
+            mountPath: /home/wger/static
+          - name: media
+            mountPath: /home/wger/media
+          envFrom:
+          - configMapRef:
+              name: wger-env
+      volumes:
+      - name: static
+        persistentVolumeClaim:
+          claimName: static
+      - name: media
+        persistentVolumeClaim:
+          claimName: media
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
