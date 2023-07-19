@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wger-env
+  labels: {{- include "wger.labels" . | nindent 4 }}
+data: {{- toYaml .Values.environment | nindent 4 }}
+   
