@@ -48,13 +48,6 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          livenessProbe:
-            exec:
-              command:
-                - wget --no-verbose --tries=1 --spider http://wger-web:8000/
-            failureThreshold: 5
-            periodSeconds: 10
-            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /
