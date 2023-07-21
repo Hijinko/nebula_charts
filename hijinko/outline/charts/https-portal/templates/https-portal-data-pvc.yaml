@@ -1,0 +1,14 @@
+{{- if .Values.global.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels: {{- include "https-portal.labels" . | nindent 4 }}
+  name: https-portal-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: {{ .Values.global.persistence.storageClassName }}
+{{- end }}
