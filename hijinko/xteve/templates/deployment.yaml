@@ -1,17 +1,16 @@
-{{- if .Values.global.register }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "https-portal.fullname" . }}
+  name: {{ include "xteve.fullname" . }}
   labels:
-    {{- include "https-portal.labels" . | nindent 4 }}
+    {{- include "xteve.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "https-portal.selectorLabels" . | nindent 6 }}
+      {{- include "xteve.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -19,16 +18,30 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "https-portal.selectorLabels" . | nindent 8 }}
+        {{- include "xteve.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "https-portal.serviceAccountName" . }}
+      serviceAccountName: {{ include "xteve.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
+        - name: gluetun
+          securityContext:
+            {{- toYaml .Values.gluetun.securityContext | nindent 12 }}
+          image: "{{ .Values.gluetun.image.repository }}:{{ .Values.gluetun.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.gluetun.image.pullPolicy }}
+          ports:
+            - name: gluetun
+              containerPort: 8888
+              protocol: TCP
+          env:
+          {{- range $k, $v := .Values.gluetun.environment }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
+          {{- end }}
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -36,30 +49,28 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 34400
               protocol: TCP
-            - name: ssl
-              containerPort: 443
-              protocol: TCP
-          envFrom:
-          - configMapRef:
-              name: https-portal-env
-          - configMapRef:
-              name: outline-env
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-           {{- if .Values.global.persistence.enabled }}
-          volumeMounts:
-          - name: https-portal-data
-            mountPath: /var/lib/postgresql/data
+          env:
+          {{- range $k, $v := .Values.environment }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
           {{- end }}
-      {{- if .Values.global.persistence.enabled }}
+          volumeMounts:
+          - name: config
+            mountPath: /config
+          - name: tmp
+            mountPath: /tmp/xteve/
       volumes:
-      - name: https-portal-data
+      - name: config
         persistentVolumeClaim:
-          claimName: https-portal-data
-      {{- end }}
-     {{- with .Values.nodeSelector }}
+          claimName: config
+      - name: tmp
+        persistentVolumeClaim:
+          claimName: tmp
+      {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -71,4 +82,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}
